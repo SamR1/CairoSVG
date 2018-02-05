@@ -30,7 +30,7 @@ from .surface import cairo
 from .url import parse_url
 
 
-def image(surface, node):
+def image(surface, node, forced_image_mode='RGB'):
     """Draw an image ``node``."""
     base_url = node.get('{http://www.w3.org/XML/1998/namespace}base')
     if not base_url and node.url:
@@ -85,7 +85,10 @@ def image(surface, node):
         return
     else:
         png_file = BytesIO()
-        Image.open(BytesIO(image_bytes)).save(png_file, 'PNG')
+        image = Image.open(BytesIO(image_bytes))
+        if forced_image_mode and image.mode != forced_image_mode:
+            image = image.convert(forced_image_mode)
+        image.save(png_file, 'PNG')
         png_file.seek(0)
 
     image_surface = cairo.ImageSurface.create_from_png(png_file)
