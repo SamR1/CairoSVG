@@ -1,5 +1,5 @@
 # This file is part of CairoSVG
-# Copyright © 2010-2015 Kozea
+# Copyright © 2010-2018 Kozea
 #
 # This library is free software: you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
@@ -38,8 +38,10 @@ def svg(surface, node):
         return
 
     scale_x, scale_y, translate_x, translate_y = preserve_ratio(surface, node)
+    rect_x, rect_y = rect_x * scale_x, rect_y * scale_y
     rect_width, rect_height = width, height
     surface.context.translate(*surface.context.get_current_point())
+    surface.context.translate(-rect_x, -rect_y)
     if node.get('overflow', 'hidden') != 'visible':
         surface.context.rectangle(rect_x, rect_y, rect_width, rect_height)
         surface.context.clip()

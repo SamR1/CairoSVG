@@ -1,10 +1,10 @@
 __pycache__
 *.egg-info
-/test/output
+/test_non_regression/output
+/build
 /dist
-/MANIFEST
 .coverage
 .cache
-/.idea
 .eggs
-build
+.idea
+.pytest_cache

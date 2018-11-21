@@ -1,5 +1,5 @@
 # This file is part of CairoSVG
-# Copyright © 2010-2015 Kozea
+# Copyright © 2010-2018 Kozea
 #
 # This library is free software: you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
@@ -29,6 +29,11 @@ from .parser import Tree
 from .surface import cairo
 from .url import parse_url
 
+IMAGE_RENDERING = {
+    'optimizeQuality': cairo.FILTER_BEST,
+    'optimizeSpeed': cairo.FILTER_FAST,
+}
+
 
 def image(surface, node, forced_image_mode='RGB'):
     """Draw an image ``node``."""
@@ -48,7 +53,7 @@ def image(surface, node, forced_image_mode='RGB'):
     if image_bytes[:4] == b'\x89PNG':
         png_file = BytesIO(image_bytes)
     elif (image_bytes[:5] in (b'<svg ', b'<?xml', b'<!DOC') or
-            image_bytes[:2] == b'\x1f\x8b'):
+            image_bytes[:2] == b'\x1f\x8b') or b'<svg' in image_bytes:
         if 'x' in node:
             del node['x']
         if 'y' in node:
@@ -92,6 +97,9 @@ def image(surface, node, forced_image_mode='RGB'):
         png_file.seek(0)
 
     image_surface = cairo.ImageSurface.create_from_png(png_file)
+    image_surface.pattern = cairo.SurfacePattern(image_surface)
+    image_surface.pattern.set_filter(IMAGE_RENDERING.get(
+        node.get('image-rendering'), cairo.FILTER_GOOD))
 
     node.image_width = image_surface.get_width()
     node.image_height = image_surface.get_height()
@@ -111,6 +119,6 @@ def image(surface, node, forced_image_mode='RGB'):
     surface.context.translate(x, y)
     surface.context.scale(scale_x, scale_y)
     surface.context.translate(translate_x, translate_y)
-    surface.context.set_source_surface(image_surface)
+    surface.context.set_source(image_surface.pattern)
     surface.context.paint()
     surface.context.restore()

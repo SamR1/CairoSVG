@@ -1,5 +1,5 @@
 # This file is part of CairoSVG
-# Copyright © 2010-2015 Kozea
+# Copyright © 2010-2018 Kozea
 #
 # This library is free software: you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
@@ -53,6 +53,8 @@ NOT_INHERITED_ATTRIBUTES = frozenset((
     'width',
     'x',
     'y',
+    'dx',
+    'dy',
     '{http://www.w3.org/1999/xlink}href',
 ))
 
@@ -182,9 +184,11 @@ class Node(dict):
             if element.namespace_url in ('', 'http://www.w3.org/2000/svg') else
             '{%s}%s' % (element.namespace_url, element.local_name))
         self.text = node.text
-        self.node = node
         self.url_fetcher = url_fetcher
         self.unsafe = unsafe
+
+        # Only set xml_tree if it's not been set before (ie. if node is a tree)
+        self.xml_tree = getattr(self, 'xml_tree', node)
 
         # Inherits from parent properties
         if parent is not None:
@@ -197,7 +201,7 @@ class Node(dict):
             self.url = getattr(self, 'url', None)
             self.parent = getattr(self, 'parent', None)
 
-        self.update(self.node.attrib)
+        self.update(self.xml_tree.attrib)
 
         # Apply CSS rules
         style_attr = node.get('style')

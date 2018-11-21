@@ -1,5 +1,5 @@
 # This file is part of CairoSVG
-# Copyright © 2010-2015 Kozea
+# Copyright © 2010-2018 Kozea
 #
 # This library is free software: you can redistribute it and/or modify it under
 # the terms of the GNU Lesser General Public License as published by the Free
@@ -110,13 +110,14 @@ def text(surface, node):
     last_r = rotate[-1]
     letters_positions = zip_letters(x, y, dx, dy, rotate, node.text)
 
+    x_align = 0
+    y_align = 0
+
     text_anchor = node.get('text-anchor')
     if text_anchor == 'middle':
         x_align = width / 2. + x_bearing
     elif text_anchor == 'end':
         x_align = width + x_bearing
-    else:
-        x_align = 0
 
     # TODO: This is a hack. The rest of the baseline alignment tags of the SVG
     # 1.1 spec (section 10.9.2) are not supported. We only try to align things
@@ -142,6 +143,7 @@ def text(surface, node):
         elif (alignment_baseline == 'text-before-edge' or
               alignment_baseline == 'before_edge' or
               alignment_baseline == 'top' or
+              alignment_baseline == 'hanging' or
               alignment_baseline == 'text-top'):
             y_align = ascent
         elif (alignment_baseline == 'text-after-edge' or
@@ -149,8 +151,6 @@ def text(surface, node):
               alignment_baseline == 'bottom' or
               alignment_baseline == 'text-bottom'):
             y_align = -descent
-        else:
-            y_align = 0
 
     bounding_box = EMPTY_BOUNDING_BOX
     if text_path:
@@ -161,7 +161,9 @@ def text(surface, node):
         surface.context.new_path()
         length = path_length(cairo_path) + x_bearing
         start_offset = size(surface, node.get('startOffset', 0), length)
-        surface.text_path_width += start_offset - x_align
+        if node.tag == 'textPath':
+            surface.text_path_width += start_offset
+        surface.text_path_width -= x_align
         bounding_box = extend_bounding_box(bounding_box, ((start_offset, 0),))
 
     if node.text:
