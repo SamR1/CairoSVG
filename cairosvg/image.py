@@ -35,7 +35,7 @@ IMAGE_RENDERING = {
 }
 
 
-def image(surface, node, forced_image_mode='RGB'):
+def image(surface, node, forced_image_mode='RGBA'):
     """Draw an image ``node``."""
     base_url = node.get('{http://www.w3.org/XML/1998/namespace}base')
     if not base_url and node.url:
